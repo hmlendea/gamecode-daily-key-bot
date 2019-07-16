@@ -13,14 +13,7 @@ namespace SteamGiveawaysBot
 {
     public sealed class Program
     {
-        static string[] UsernameOptions = { "-u", "--user", "--username" };
-        static string[] SecretKeyOptions = { "-k", "--ssk", "--key", "--secretkey", "--sharedsecretkey" };
-
-        static TimeSpan RetryDelay => TimeSpan.FromSeconds(10);
-
         static ILogger logger;
-        
-        static TimeSpan ConnectionWaitTime => TimeSpan.FromMinutes(5);
 
         static IServiceProvider serviceProvider;
 
