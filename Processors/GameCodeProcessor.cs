@@ -65,13 +65,18 @@ namespace GameCodeDailyKeyBot.Processors
             By keyToSendInputSelector = By.Id("steam_key");
             By receivedKeyInputSelector = By.Id("inputKey");
             By submitButtonSelector = By.Id("getKey");
+            By giveawaysButtonSelector = By.XPath("/html/body/div[2]/div[1]/div/a[1]");
 
             string randomKey = GenerateRandomKey();
+
+            // TODO: Trick to bypass the ads
+            Click(giveawaysButtonSelector);
+            Wait();
+            NewTab(KeyExchangeUrl);
 
             SetText(keyToSendInputSelector, randomKey);
 
             Click(submitButtonSelector);
-
             WaitForElementToExist(receivedKeyInputSelector);
 
             string key = GetText(receivedKeyInputSelector).Replace("Your key", "").Trim();
