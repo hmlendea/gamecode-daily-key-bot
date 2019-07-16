@@ -1,14 +1,12 @@
 using System;
-using System.Net;
-using System.Threading;
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+using NuciDAL.Repositories;
 using NuciLog;
 using NuciLog.Core;
 
-using GameCodeDailyKeyBot.Entities;
+using GameCodeDailyKeyBot.DataAccess.DataObjects;
 using GameCodeDailyKeyBot.Service;
 
 namespace SteamGiveawaysBot
@@ -24,51 +22,48 @@ namespace SteamGiveawaysBot
         
         static TimeSpan ConnectionWaitTime => TimeSpan.FromMinutes(5);
 
+        static IServiceProvider serviceProvider;
+
         static void Main(string[] args)
         {
-            IServiceProvider serviceProvider = new ServiceCollection()
-                .AddSingleton<ILogger, NuciLogger>()
-                .AddSingleton<IBotService, BotService>()
-                .BuildServiceProvider();
+            serviceProvider = CreateIOC();
 
             logger = serviceProvider.GetService<ILogger>();
             logger.SetSourceContext<Program>();
+
             logger.Info(Operation.StartUp, $"Application started");
-
-            while (true)
-            {
-                try
-                {
-                    RunLoop(serviceProvider);
-                }
-                catch (AggregateException ex)
-                {
-                    foreach (Exception innerException in ex.InnerExceptions)
-                    {
-                        logger.Fatal(Operation.Unknown, OperationStatus.Failure, innerException);
-                    }
-
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    logger.Fatal(Operation.Unknown, OperationStatus.Failure, ex);
-                    break;
-                }
-            }
-
+            Run();
             logger.Info(Operation.ShutDown, $"Application stopped");
         }
 
-        static void RunLoop(IServiceProvider serviceProvider)
+        static IServiceProvider CreateIOC()
         {
-            AccountDetails account = new AccountDetails();
-            account.Username = "xxx";
-            account.Password = "xxx";
-            
-            IBotService botService = new BotService(account, logger);
+            return new ServiceCollection()
+                .AddSingleton<ILogger, NuciLogger>()
+                .AddSingleton<IRepository<SteamAccountEntity>>(s => new CsvRepository<SteamAccountEntity>("Data/accounts.txt"))
+                .AddSingleton<IBotService, BotService>()
+                .BuildServiceProvider();
+        }
 
-            botService.Run();
+        static void Run()
+        {
+            IBotService bot = serviceProvider.GetService<IBotService>();
+
+            try
+            {
+                bot.Run();
+            }
+            catch (AggregateException ex)
+            {
+                foreach (Exception innerException in ex.InnerExceptions)
+                {
+                    logger.Fatal(Operation.Unknown, OperationStatus.Failure, innerException);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Fatal(Operation.Unknown, OperationStatus.Failure, ex);
+            }
         }
     }
 }

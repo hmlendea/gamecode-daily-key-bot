@@ -3,22 +3,22 @@ using NuciWeb;
 
 using OpenQA.Selenium;
 
-using GameCodeDailyKeyBot.Entities;
 using GameCodeDailyKeyBot.Logging;
+using GameCodeDailyKeyBot.Service.Models;
 
-namespace GameCodeDailyKeyBot.Processors
+namespace GameCodeDailyKeyBot.Service.Processors
 {
     public sealed class SteamProcessor : WebProcessor
     {
         public string HomePageUrl => "https://store.steampowered.com";
         public string LogInUrl => $"{HomePageUrl}/login/?redir=&redir_ssl=1";
 
-        AccountDetails account;
+        SteamAccount account;
         ILogger logger;
 
         public SteamProcessor(
             IWebDriver driver,
-            AccountDetails account,
+            SteamAccount account,
             ILogger logger)
             : base(driver)
         {

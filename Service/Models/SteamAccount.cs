@@ -1,6 +1,6 @@
-namespace GameCodeDailyKeyBot.Entities
+namespace GameCodeDailyKeyBot.Service.Models
 {
-    public sealed class AccountDetails
+    public sealed class SteamAccount
     {
         string username;
 
@@ -11,7 +11,5 @@ namespace GameCodeDailyKeyBot.Entities
         }
 
         public string Password { get; set; }
-
-        public bool IsRegisteredOnGameCode { get; set; }
     }
 }

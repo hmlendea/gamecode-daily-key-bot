@@ -4,10 +4,10 @@ using NuciWeb;
 using NuciExtensions;
 using OpenQA.Selenium;
 
-using GameCodeDailyKeyBot.Entities;
 using GameCodeDailyKeyBot.Logging;
+using GameCodeDailyKeyBot.Service.Models;
 
-namespace GameCodeDailyKeyBot.Processors
+namespace GameCodeDailyKeyBot.Service.Processors
 {
     public sealed class GameCodeProcessor : WebProcessor
     {
@@ -15,12 +15,12 @@ namespace GameCodeDailyKeyBot.Processors
         public string LogInUrl => $"{HomePageUrl}/login";
         public string KeyExchangeUrl => $"{HomePageUrl}/exchange/keys";
 
-        AccountDetails account;
+        SteamAccount account;
         ILogger logger;
 
         public GameCodeProcessor(
             IWebDriver driver,
-            AccountDetails account,
+            SteamAccount account,
             ILogger logger)
             : base(driver)
         {

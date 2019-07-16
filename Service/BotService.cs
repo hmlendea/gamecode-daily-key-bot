@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
-using NuciExtensions;
+using NuciDAL.Repositories;
 using NuciLog.Core;
 
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 
-using GameCodeDailyKeyBot.Entities;
-using GameCodeDailyKeyBot.Logging;
-using GameCodeDailyKeyBot.Processors;
+using GameCodeDailyKeyBot.DataAccess.DataObjects;
+using GameCodeDailyKeyBot.Service.Mappings;
+using GameCodeDailyKeyBot.Service.Models;
+using GameCodeDailyKeyBot.Service.Processors;
 
 namespace GameCodeDailyKeyBot.Service
 {
@@ -18,44 +18,50 @@ namespace GameCodeDailyKeyBot.Service
     {
         public bool IsRunning { get; private set; }
 
+        readonly IRepository<SteamAccountEntity> accountRepository;
+
         readonly ILogger logger;
 
-        readonly AccountDetails account;
-
         public BotService(
-            AccountDetails account,
+            IRepository<SteamAccountEntity> accountRepository,
             ILogger logger)
         {
+            this.accountRepository = accountRepository;
             this.logger = logger;
-            this.account = account;
         }
 
         public void Run()
         {
             IsRunning = true;
 
-            RunLoop();
+            IEnumerable<SteamAccount> accounts = accountRepository.GetAll().ToServiceModels();
+
+            ProcessAccounts(accounts);
         }
 
-        void RunLoop()
+        void ProcessAccounts(IEnumerable<SteamAccount> accounts)
         {
-            while (IsRunning)
+            foreach (SteamAccount account in accounts)
             {
                 IWebDriver driver = SetupDriver();
 
                 try
                 {
-                    DoStuff(driver);
+                    ProcessAccount(account, driver);
                 }
                 catch (Exception ex)
                 {
                     driver.Quit();
                     logger.Error(Operation.Unknown, OperationStatus.Failure, ex);
                 }
+                finally
+                {
+                    driver.Quit();
+                }
             }
         }
 
-        void DoStuff(IWebDriver driver)
+        void ProcessAccount(SteamAccount account, IWebDriver driver)
         {
             SteamProcessor steamProcessor = new SteamProcessor(driver, account, logger);
             steamProcessor.LogIn();
