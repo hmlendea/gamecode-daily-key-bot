@@ -1,3 +1,5 @@
+using System;
+
 using NuciLog.Core;
 using NuciWeb;
 
@@ -66,6 +68,14 @@ namespace GameCodeDailyKeyBot.Service.Processors
             By receivedKeyInputSelector = By.Id("inputKey");
             By submitButtonSelector = By.Id("getKey");
             By giveawaysButtonSelector = By.XPath("/html/body/div[2]/div[1]/div/a[1]");
+            By clockSelector = By.ClassName("flip-clock-active");
+            
+            WaitForAnyElementToBeVisible(clockSelector, keyToSendInputSelector);
+
+            if (IsElementVisible(clockSelector))
+            {
+                throw new Exception("This account already redeemed a key today");
+            }
 
             string randomKey = GenerateRandomKey();
 

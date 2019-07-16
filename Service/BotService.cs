@@ -19,11 +19,13 @@ namespace GameCodeDailyKeyBot.Service
         public bool IsRunning { get; private set; }
 
         readonly IRepository<SteamAccountEntity> accountRepository;
+        readonly IRepository<SteamKeyEntity> keyRepository;
 
         readonly ILogger logger;
 
         public BotService(
             IRepository<SteamAccountEntity> accountRepository,
+            IRepository<SteamKeyEntity> keyRepository,
             ILogger logger)
         {
             this.accountRepository = accountRepository;
@@ -47,30 +49,37 @@ namespace GameCodeDailyKeyBot.Service
 
                 try
                 {
-                    ProcessAccount(account, driver);
+                    SteamKey key = GatherKey(account, driver);
+
+                    keyRepository.Add(key.ToDataObject());
                 }
                 catch (Exception ex)
                 {
-                    driver.Quit();
                     logger.Error(Operation.Unknown, OperationStatus.Failure, ex);
                 }
                 finally
                 {
                     driver.Quit();
+                    keyRepository.ApplyChanges();
                 }
             }
         }
 
-        void ProcessAccount(SteamAccount account, IWebDriver driver)
+        SteamKey GatherKey(SteamAccount account, IWebDriver driver)
         {
             SteamProcessor steamProcessor = new SteamProcessor(driver, account, logger);
             steamProcessor.LogIn();
 
             GameCodeProcessor gameCodeProcessor = new GameCodeProcessor(driver, account, logger);
             gameCodeProcessor.LogIn();
-            string key = gameCodeProcessor.GatherKey();
 
-            Console.WriteLine(key);
+            SteamKey key = new SteamKey();
+            key.Id = Guid.NewGuid().ToString();
+            key.DateReceived = DateTime.Now;
+            key.Username = account.Username;
+            key.Code = gameCodeProcessor.GatherKey();
+
+            return key;
         }
 
         IWebDriver SetupDriver()
@@ -81,7 +90,7 @@ namespace GameCodeDailyKeyBot.Service
             options.AddArgument("--no-sandbox");
 			options.AddArgument("--disable-translate");
 			options.AddArgument("--disable-infobars");
-            //options.AddArgument("--headless");
+            options.AddArgument("--headless");
             options.AddArgument("--disable-gpu");
             options.AddArgument("--window-size=1920,1080");
             options.AddArgument("--start-maximized");
