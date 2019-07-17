@@ -34,7 +34,7 @@ namespace SteamGiveawaysBot
             return new ServiceCollection()
                 .AddSingleton<ILogger, NuciLogger>()
                 .AddSingleton<IRepository<SteamAccountEntity>>(s => new CsvRepository<SteamAccountEntity>("Data/accounts.txt"))
-                .AddSingleton<IRepository<SteamAccountEntity>>(s => new CsvRepository<SteamAccountEntity>("Data/keys.txt"))
+                .AddSingleton<IRepository<SteamKeyEntity>>(s => new CsvRepository<SteamKeyEntity>("Data/keys.txt"))
                 .AddSingleton<IBotService, BotService>()
                 .BuildServiceProvider();
         }

@@ -89,7 +89,12 @@ namespace GameCodeDailyKeyBot.Service.Processors
             Click(submitButtonSelector);
             WaitForElementToExist(receivedKeyInputSelector);
 
-            string key = GetText(receivedKeyInputSelector).Replace("Your key", "").Trim();
+            if (string.IsNullOrWhiteSpace(GetText(receivedKeyInputSelector)))
+            {
+                Wait(1000);
+            }
+
+            string key = GetText(receivedKeyInputSelector).ToUpper().Replace("YOUR KEY", "").Trim();
 
             logger.Debug(
                 MyOperation.KeyGathering,

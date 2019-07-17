@@ -29,6 +29,7 @@ namespace GameCodeDailyKeyBot.Service
             ILogger logger)
         {
             this.accountRepository = accountRepository;
+            this.keyRepository = keyRepository;
             this.logger = logger;
         }
 
