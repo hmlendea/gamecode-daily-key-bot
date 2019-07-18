@@ -68,9 +68,6 @@ namespace GameCodeDailyKeyBot.Service
 
         SteamKey GatherKey(SteamAccount account, IWebDriver driver)
         {
-            SteamProcessor steamProcessor = new SteamProcessor(driver, account, logger);
-            steamProcessor.LogIn();
-
             GameCodeProcessor gameCodeProcessor = new GameCodeProcessor(driver, account, logger);
             gameCodeProcessor.LogIn();
 
