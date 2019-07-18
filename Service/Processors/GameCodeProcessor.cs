@@ -1,4 +1,4 @@
-using System;
+using System.Collections.Generic;
 
 using NuciLog.Core;
 using NuciWeb;
@@ -15,10 +15,12 @@ namespace GameCodeDailyKeyBot.Service.Processors
     {
         public string HomePageUrl => "https://gamecode.win/";
         public string LogInUrl => $"{HomePageUrl}/login";
+        public string LogOutUrl => $"{HomePageUrl}/logout";
         public string KeyExchangeUrl => $"{HomePageUrl}/exchange/keys";
 
         SteamAccount account;
         ILogger logger;
+        IEnumerable<LogInfo> logInfos;
 
         public GameCodeProcessor(
             IWebDriver driver,
@@ -28,39 +30,49 @@ namespace GameCodeDailyKeyBot.Service.Processors
         {
             this.account = account;
             this.logger = logger;
+            this.logInfos = new List<LogInfo>
+            {
+                new LogInfo(MyLogInfoKey.Username, account.Username)
+            };
         }
 
         public void LogIn()
         {
-            logger.Info(
-                MyOperation.GameCodeLogIn,
-                OperationStatus.Started,
-                new LogInfo(MyLogInfoKey.Username, account.Username));
+            logger.Info(MyOperation.LogIn, OperationStatus.Started, logInfos);
 
             GoToUrl(LogInUrl);
 
             By usernameSelector = By.Name("email");
             By passwordSelector = By.Name("password");
+            By logInButtonSelector = By.XPath(@"//*[@id='loginForm']/form/button");
             By giveawayButtonSelector = By.Id("gamesToggle_0");
 
             SetText(usernameSelector, account.Username + "@yopmail.com");
             SetText(passwordSelector, account.Password);
             
-            Click(By.XPath(@"//*[@id='loginForm']/form/button"));
+            Click(logInButtonSelector);
             
             WaitForElementToExist(giveawayButtonSelector);
 
-            logger.Debug(
-                MyOperation.GameCodeLogIn,
-                OperationStatus.Success);
+            logger.Debug(MyOperation.LogIn, OperationStatus.Success, logInfos);
+        }
+
+        public void LogOut()
+        {
+            logger.Info(MyOperation.LogOut, OperationStatus.Started, logInfos);
+
+            GoToUrl(LogOutUrl);
+
+            By giveawayButtonSelector = By.Id("gamesToggle_0");
+
+            WaitForElementToExist(giveawayButtonSelector);
+
+            logger.Debug(MyOperation.LogOut, OperationStatus.Success, logInfos);
         }
 
         public string GatherKey()
         {
-            logger.Info(
-                MyOperation.KeyGathering,
-                OperationStatus.Started,
-                new LogInfo(MyLogInfoKey.Username, account.Username));
+            logger.Info(MyOperation.KeyGathering, OperationStatus.Started, logInfos);
 
             GoToUrl(KeyExchangeUrl);
 
@@ -74,7 +86,8 @@ namespace GameCodeDailyKeyBot.Service.Processors
 
             if (IsElementVisible(clockSelector))
             {
-                throw new Exception("This account already redeemed a key today");
+                logger.Error(MyOperation.KeyGathering, OperationStatus.Failure, "This account already claimed a key today", logInfos);
+                return null;
             }
 
             string randomKey = GenerateRandomKey();
@@ -96,9 +109,7 @@ namespace GameCodeDailyKeyBot.Service.Processors
 
             string key = GetText(receivedKeyInputSelector).ToUpper().Replace("YOUR KEY", "").Trim();
 
-            logger.Debug(
-                MyOperation.KeyGathering,
-                OperationStatus.Success);
+            logger.Debug(MyOperation.KeyGathering, OperationStatus.Success, logInfos);
             
             return key;
         }

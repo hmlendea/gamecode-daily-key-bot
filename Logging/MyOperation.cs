@@ -10,9 +10,9 @@ namespace GameCodeDailyKeyBot.Logging
             
         }
 
-        public static Operation SteamLogIn => new MyOperation(nameof(SteamLogIn));
+        public static Operation LogIn => new MyOperation(nameof(LogIn));
 
-        public static Operation GameCodeLogIn => new MyOperation(nameof(GameCodeLogIn));
+        public static Operation LogOut => new MyOperation(nameof(LogOut));
 
         public static Operation KeyGathering => new MyOperation(nameof(KeyGathering));
     }

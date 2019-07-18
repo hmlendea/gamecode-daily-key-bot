@@ -44,38 +44,45 @@ namespace GameCodeDailyKeyBot.Service
 
         void ProcessAccounts(IEnumerable<SteamAccount> accounts)
         {
+            IWebDriver driver = SetupDriver();
+
             foreach (SteamAccount account in accounts)
             {
-                IWebDriver driver = SetupDriver();
+                SteamKey key = GatherKey(account, driver);
 
-                try
+                if (key is null)
                 {
-                    SteamKey key = GatherKey(account, driver);
+                    continue;
+                }
 
-                    keyRepository.Add(key.ToDataObject());
-                }
-                catch (Exception ex)
-                {
-                    logger.Error(Operation.Unknown, OperationStatus.Failure, ex);
-                }
-                finally
-                {
-                    driver.Quit();
-                    keyRepository.ApplyChanges();
-                }
+                keyRepository.Add(key.ToDataObject());
+                keyRepository.ApplyChanges();
             }
+
+            driver.Quit();
         }
 
         SteamKey GatherKey(SteamAccount account, IWebDriver driver)
         {
-            GameCodeProcessor gameCodeProcessor = new GameCodeProcessor(driver, account, logger);
-            gameCodeProcessor.LogIn();
+            string keyCode = null;
+
+            using (GameCodeProcessor gameCodeProcessor = new GameCodeProcessor(driver, account, logger))
+            {
+                gameCodeProcessor.LogIn();
+                keyCode = gameCodeProcessor.GatherKey();
+                gameCodeProcessor.LogOut();
+            }
+
+            if (string.IsNullOrWhiteSpace(keyCode))
+            {
+                return null;
+            }
 
             SteamKey key = new SteamKey();
             key.Id = Guid.NewGuid().ToString();
             key.DateReceived = DateTime.Now;
             key.Username = account.Username;
-            key.Code = gameCodeProcessor.GatherKey();
+            key.Code = keyCode;
 
             return key;
         }
@@ -88,7 +95,7 @@ namespace GameCodeDailyKeyBot.Service
             options.AddArgument("--no-sandbox");
 			options.AddArgument("--disable-translate");
 			options.AddArgument("--disable-infobars");
-            options.AddArgument("--headless");
+            //options.AddArgument("--headless");
             options.AddArgument("--disable-gpu");
             options.AddArgument("--window-size=1920,1080");
             options.AddArgument("--start-maximized");
