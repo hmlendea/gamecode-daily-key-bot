@@ -18,16 +18,13 @@ namespace SteamGiveawaysBot
         static ILogger logger;
 
         static DataSettings dataSettings;
+        static DebugSettings debugSettings;
 
         static IServiceProvider serviceProvider;
 
         static void Main(string[] args)
         {
-            dataSettings = new DataSettings();
-
-            IConfiguration config = LoadConfiguration();
-            config.Bind(nameof(DataSettings), dataSettings);
-
+            LoadConfiguration();
             serviceProvider = CreateIOC();
 
             logger = serviceProvider.GetService<ILogger>();
@@ -40,14 +37,24 @@ namespace SteamGiveawaysBot
         
         static IConfiguration LoadConfiguration()
         {
-            return new ConfigurationBuilder()
+            dataSettings = new DataSettings();
+            debugSettings = new DebugSettings();
+            
+            IConfiguration config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", true, true)
                 .Build();
+
+            config.Bind(nameof(DataSettings), dataSettings);
+            config.Bind(nameof(DebugSettings), debugSettings);
+
+            return config;
         }
 
         static IServiceProvider CreateIOC()
         {
             return new ServiceCollection()
+                .AddSingleton(dataSettings)
+                .AddSingleton(debugSettings)
                 .AddSingleton<ILogger, NuciLogger>()
                 .AddSingleton<IRepository<SteamAccountEntity>>(s => new CsvRepository<SteamAccountEntity>(dataSettings.AccountsStorePath))
                 .AddSingleton<IRepository<SteamKeyEntity>>(s => new CsvRepository<SteamKeyEntity>(dataSettings.KeysStorePath))

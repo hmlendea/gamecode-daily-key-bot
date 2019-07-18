@@ -7,6 +7,7 @@ using NuciLog.Core;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 
+using GameCodeDailyKeyBot.Configuration;
 using GameCodeDailyKeyBot.DataAccess.DataObjects;
 using GameCodeDailyKeyBot.Service.Mappings;
 using GameCodeDailyKeyBot.Service.Models;
@@ -21,15 +22,18 @@ namespace GameCodeDailyKeyBot.Service
         readonly IRepository<SteamAccountEntity> accountRepository;
         readonly IRepository<SteamKeyEntity> keyRepository;
 
+        readonly DebugSettings debugSettings;
         readonly ILogger logger;
 
         public BotService(
             IRepository<SteamAccountEntity> accountRepository,
             IRepository<SteamKeyEntity> keyRepository,
+            DebugSettings debugSettings,
             ILogger logger)
         {
             this.accountRepository = accountRepository;
             this.keyRepository = keyRepository;
+            this.debugSettings = debugSettings;
             this.logger = logger;
         }
 
@@ -95,12 +99,16 @@ namespace GameCodeDailyKeyBot.Service
             options.AddArgument("--no-sandbox");
 			options.AddArgument("--disable-translate");
 			options.AddArgument("--disable-infobars");
-            //options.AddArgument("--headless");
-            options.AddArgument("--disable-gpu");
-            options.AddArgument("--window-size=1920,1080");
-            options.AddArgument("--start-maximized");
-            options.AddArgument("--blink-settings=imagesEnabled=false");
-            options.AddUserProfilePreference("profile.default_content_setting_values.images", 2);
+
+            if (debugSettings.IsHeadless)
+            {
+                options.AddArgument("--headless");
+                options.AddArgument("--disable-gpu");
+                options.AddArgument("--window-size=1920,1080");
+                options.AddArgument("--start-maximized");
+                options.AddArgument("--blink-settings=imagesEnabled=false");
+                options.AddUserProfilePreference("profile.default_content_setting_values.images", 2);
+            }
 
             ChromeDriverService service = ChromeDriverService.CreateDefaultService();
             service.SuppressInitialDiagnosticInformation = true;
