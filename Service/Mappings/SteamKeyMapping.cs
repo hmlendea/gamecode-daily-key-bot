@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 using GameCodeDailyKeyBot.DataAccess.DataObjects;
@@ -8,11 +10,13 @@ namespace GameCodeDailyKeyBot.Service.Mappings
 {
     static class SteamKeyMapping
     {
+        const string DateFormat = "yyyy/MM/dd";
+        
         internal static SteamKey ToServiceModel(this SteamKeyEntity dataObject)
         {
             SteamKey serviceModel = new SteamKey();
             serviceModel.Id = dataObject.Id;
-            serviceModel.DateReceived = dataObject.DateReceived;
+            serviceModel.DateReceived = DateTime.ParseExact(dataObject.DateReceived, DateFormat, CultureInfo.InvariantCulture);
             serviceModel.Username = dataObject.Username;
             serviceModel.Code = dataObject.Code;
 
@@ -23,7 +27,7 @@ namespace GameCodeDailyKeyBot.Service.Mappings
         {
             SteamKeyEntity dataObject = new SteamKeyEntity();
             dataObject.Id = serviceModel.Id;
-            dataObject.DateReceived = serviceModel.DateReceived;
+            dataObject.DateReceived = serviceModel.DateReceived.ToString(DateFormat);
             dataObject.Username = serviceModel.Username;
             dataObject.Code = serviceModel.Code;
 
