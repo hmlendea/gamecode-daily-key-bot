@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using NuciDAL.Repositories;
 using NuciLog.Core;
@@ -50,9 +51,21 @@ namespace GameCodeDailyKeyBot.Service
         void ProcessAccounts(IEnumerable<SteamAccount> accounts)
         {
             IWebDriver driver = SetupDriver();
+            IEnumerable<SteamKey> keys = keyRepository.GetAll().ToServiceModels();
 
             foreach (SteamAccount account in accounts)
             {
+                if (keys.Any(x => x.Username == account.Username))
+                {
+                    DateTime today = DateTime.Now;
+                    DateTime latestClaim = keys.Where(x => x.Username == account.Username).OrderBy(x => x.DateReceived).Last().DateReceived;
+
+                    if (today < latestClaim.AddDays(1))
+                    {
+                        continue;
+                    }
+                }
+
                 SteamKey key = TryGatherKey(account, driver);
 
                 if (key is null)
@@ -73,9 +86,9 @@ namespace GameCodeDailyKeyBot.Service
             {
                 return GatherKey(account, driver);
             }
-            catch
+            catch (Exception ex)
             {
-                logger.Error(MyOperation.KeyGathering, OperationStatus.Failure, new LogInfo(MyLogInfoKey.Username, account.Username));
+                logger.Error(MyOperation.KeyGathering, OperationStatus.Failure, ex, new LogInfo(MyLogInfoKey.Username, account.Username));
 
                 return null;
             }
