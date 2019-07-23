@@ -9,6 +9,7 @@ using OpenQA.Selenium.Chrome;
 
 using GameCodeDailyKeyBot.Configuration;
 using GameCodeDailyKeyBot.DataAccess.DataObjects;
+using GameCodeDailyKeyBot.Logging;
 using GameCodeDailyKeyBot.Service.Mappings;
 using GameCodeDailyKeyBot.Service.Models;
 using GameCodeDailyKeyBot.Service.Processors;
@@ -52,7 +53,7 @@ namespace GameCodeDailyKeyBot.Service
 
             foreach (SteamAccount account in accounts)
             {
-                SteamKey key = GatherKey(account, driver);
+                SteamKey key = TryGatherKey(account, driver);
 
                 if (key is null)
                 {
@@ -64,6 +65,20 @@ namespace GameCodeDailyKeyBot.Service
             }
 
             driver.Quit();
+        }
+
+        SteamKey TryGatherKey(SteamAccount account, IWebDriver driver)
+        {
+            try
+            {
+                return GatherKey(account, driver);
+            }
+            catch
+            {
+                logger.Error(MyOperation.KeyGathering, OperationStatus.Failure, new LogInfo(MyLogInfoKey.Username, account.Username));
+
+                return null;
+            }
         }
 
         SteamKey GatherKey(SteamAccount account, IWebDriver driver)
