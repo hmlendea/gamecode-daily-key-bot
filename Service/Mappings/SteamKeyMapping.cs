@@ -10,7 +10,7 @@ namespace GameCodeDailyKeyBot.Service.Mappings
 {
     static class SteamKeyMapping
     {
-        const string DateFormat = "yyyy/MM/dd";
+        const string DateFormat = "yyyy.MM.dd";
         
         internal static SteamKey ToServiceModel(this SteamKeyEntity dataObject)
         {
