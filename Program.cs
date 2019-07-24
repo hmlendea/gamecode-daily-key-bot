@@ -17,6 +17,7 @@ namespace SteamGiveawaysBot
     {
         static ILogger logger;
 
+        static BotSettings botSettings;
         static DataSettings dataSettings;
         static DebugSettings debugSettings;
 
@@ -37,6 +38,7 @@ namespace SteamGiveawaysBot
         
         static IConfiguration LoadConfiguration()
         {
+            botSettings = new BotSettings();
             dataSettings = new DataSettings();
             debugSettings = new DebugSettings();
             
@@ -44,6 +46,7 @@ namespace SteamGiveawaysBot
                 .AddJsonFile("appsettings.json", true, true)
                 .Build();
 
+            config.Bind(nameof(BotSettings), botSettings);
             config.Bind(nameof(DataSettings), dataSettings);
             config.Bind(nameof(DebugSettings), debugSettings);
 
@@ -53,6 +56,7 @@ namespace SteamGiveawaysBot
         static IServiceProvider CreateIOC()
         {
             return new ServiceCollection()
+                .AddSingleton(botSettings)
                 .AddSingleton(dataSettings)
                 .AddSingleton(debugSettings)
                 .AddSingleton<ILogger, NuciLogger>()

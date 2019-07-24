@@ -24,17 +24,20 @@ namespace GameCodeDailyKeyBot.Service
         readonly IRepository<SteamAccountEntity> accountRepository;
         readonly IRepository<SteamKeyEntity> keyRepository;
 
+        readonly BotSettings botSettings;
         readonly DebugSettings debugSettings;
         readonly ILogger logger;
 
         public BotService(
             IRepository<SteamAccountEntity> accountRepository,
             IRepository<SteamKeyEntity> keyRepository,
+            BotSettings botSettings,
             DebugSettings debugSettings,
             ILogger logger)
         {
             this.accountRepository = accountRepository;
             this.keyRepository = keyRepository;
+            this.botSettings = botSettings;
             this.debugSettings = debugSettings;
             this.logger = logger;
         }
@@ -142,7 +145,7 @@ namespace GameCodeDailyKeyBot.Service
             service.SuppressInitialDiagnosticInformation = true;
             service.HideCommandPromptWindow = true;
 
-            IWebDriver driver = new ChromeDriver(service, options);
+            IWebDriver driver = new ChromeDriver(service, options, TimeSpan.FromSeconds(botSettings.PageLoadTimeout));
             IJavaScriptExecutor scriptExecutor = (IJavaScriptExecutor)driver;
             string userAgent = (string)scriptExecutor.ExecuteScript("return navigator.userAgent;");
 
@@ -155,6 +158,7 @@ namespace GameCodeDailyKeyBot.Service
                 driver = new ChromeDriver(service, options);
             }
 
+            driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(botSettings.PageLoadTimeout);
             driver.Manage().Window.Maximize();
 
             return driver;
