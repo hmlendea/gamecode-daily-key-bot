@@ -6,10 +6,13 @@ using Microsoft.Extensions.DependencyInjection;
 using NuciDAL.Repositories;
 using NuciLog;
 using NuciLog.Core;
+using NuciSecurity.HMAC;
 
 using GameCodeDailyKeyBot.Configuration;
 using GameCodeDailyKeyBot.DataAccess.DataObjects;
+using GameCodeDailyKeyBot.Security;
 using GameCodeDailyKeyBot.Service;
+using GameCodeDailyKeyBot.Service.Models;
 
 namespace SteamGiveawaysBot
 {
@@ -20,6 +23,7 @@ namespace SteamGiveawaysBot
         static BotSettings botSettings;
         static DataSettings dataSettings;
         static DebugSettings debugSettings;
+        static ProductKeyManagerSettings productKeyManagerSettings;
 
         static IServiceProvider serviceProvider;
 
@@ -41,6 +45,7 @@ namespace SteamGiveawaysBot
             botSettings = new BotSettings();
             dataSettings = new DataSettings();
             debugSettings = new DebugSettings();
+            productKeyManagerSettings = new ProductKeyManagerSettings();
             
             IConfiguration config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", true, true)
@@ -49,6 +54,7 @@ namespace SteamGiveawaysBot
             config.Bind(nameof(BotSettings), botSettings);
             config.Bind(nameof(DataSettings), dataSettings);
             config.Bind(nameof(DebugSettings), debugSettings);
+            config.Bind(nameof(ProductKeyManagerSettings), productKeyManagerSettings);
 
             return config;
         }
@@ -59,9 +65,12 @@ namespace SteamGiveawaysBot
                 .AddSingleton(botSettings)
                 .AddSingleton(dataSettings)
                 .AddSingleton(debugSettings)
+                .AddSingleton(productKeyManagerSettings)
                 .AddSingleton<ILogger, NuciLogger>()
                 .AddSingleton<IRepository<SteamAccountEntity>>(s => new CsvRepository<SteamAccountEntity>(dataSettings.AccountsStorePath))
                 .AddSingleton<IRepository<SteamKeyEntity>>(s => new CsvRepository<SteamKeyEntity>(dataSettings.KeysStorePath))
+                .AddSingleton<IHmacEncoder<StoreProductKeyRequest>, StoreProductKeyRequestHmacEncoder>()
+                .AddSingleton<IProductKeyManager, ProductKeyManager>()
                 .AddSingleton<IBotService, BotService>()
                 .BuildServiceProvider();
         }

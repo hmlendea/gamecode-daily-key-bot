@@ -15,5 +15,7 @@ namespace GameCodeDailyKeyBot.Logging
         public static Operation LogOut => new MyOperation(nameof(LogOut));
 
         public static Operation KeyGathering => new MyOperation(nameof(KeyGathering));
+
+        public static Operation KeySaving => new MyOperation(nameof(KeySaving));
     }
 }

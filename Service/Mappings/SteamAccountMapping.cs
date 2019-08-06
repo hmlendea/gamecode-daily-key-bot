@@ -6,7 +6,7 @@ using GameCodeDailyKeyBot.Service.Models;
 
 namespace GameCodeDailyKeyBot.Service.Mappings
 {
-    static class SteamAccountMapping
+    internal static class SteamAccountMapping
     {
         internal static SteamAccount ToServiceModel(this SteamAccountEntity dataObject)
         {
