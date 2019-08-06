@@ -22,21 +22,23 @@ namespace GameCodeDailyKeyBot.Service
         public bool IsRunning { get; private set; }
 
         readonly IRepository<SteamAccountEntity> accountRepository;
-        readonly IRepository<SteamKeyEntity> keyRepository;
+        readonly IProductKeyManager productKeyManager;
 
         readonly BotSettings botSettings;
         readonly DebugSettings debugSettings;
         readonly ILogger logger;
 
+        IWebDriver driver;
+
         public BotService(
             IRepository<SteamAccountEntity> accountRepository,
-            IRepository<SteamKeyEntity> keyRepository,
+            IProductKeyManager productKeyManager,
             BotSettings botSettings,
             DebugSettings debugSettings,
             ILogger logger)
         {
             this.accountRepository = accountRepository;
-            this.keyRepository = keyRepository;
+            this.productKeyManager = productKeyManager;
             this.botSettings = botSettings;
             this.debugSettings = debugSettings;
             this.logger = logger;
@@ -48,39 +50,48 @@ namespace GameCodeDailyKeyBot.Service
 
             IEnumerable<SteamAccount> accounts = accountRepository.GetAll().ToServiceModels();
 
-            ProcessAccounts(accounts);
+            if (!(driver is null))
+            {
+                driver.Quit();
+            }
+
+            driver = SetupDriver();
+
+            try
+            {
+                ProcessAccounts(accounts);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                driver.Quit();
+            }
         }
 
         void ProcessAccounts(IEnumerable<SteamAccount> accounts)
         {
-            IWebDriver driver = SetupDriver();
-            IEnumerable<SteamKey> keys = keyRepository.GetAll().ToServiceModels();
-
             foreach (SteamAccount account in accounts)
             {
-                if (keys.Any(x => x.Username == account.Username))
-                {
-                    DateTime today = DateTime.Now;
-                    DateTime latestClaim = keys.Where(x => x.Username == account.Username).OrderBy(x => x.DateReceived).Last().DateReceived;
+                DateTime today = DateTime.Now;
+                DateTime latestClaimDay = productKeyManager.GetLatestClaimDate(account.Username);
 
-                    if (today < latestClaim.AddDays(1))
-                    {
-                        continue;
-                    }
+                if (today < latestClaimDay.AddDays(1))
+                {
+                    continue;
                 }
 
                 SteamKey key = TryGatherKey(account, driver);
-
+            
                 if (key is null)
                 {
                     continue;
                 }
 
-                keyRepository.Add(key.ToDataObject());
-                keyRepository.ApplyChanges();
+                productKeyManager.StoreProductKey(key);
             }
-
-            driver.Quit();
         }
 
         SteamKey TryGatherKey(SteamAccount account, IWebDriver driver)
