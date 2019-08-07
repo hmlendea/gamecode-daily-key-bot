@@ -116,7 +116,7 @@ namespace GameCodeDailyKeyBot.Service
             {
                 gameCodeProcessor.LogIn();
                 keyCode = gameCodeProcessor.GatherKey();
-                gameCodeProcessor.LogOut();
+                driver.Manage().Cookies.DeleteAllCookies();
             }
 
             if (string.IsNullOrWhiteSpace(keyCode))
