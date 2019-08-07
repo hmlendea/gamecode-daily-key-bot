@@ -40,12 +40,5 @@ namespace GameCodeDailyKeyBot.Service.Mappings
 
             return serviceModels;
         }
-
-        internal static IEnumerable<SteamKeyEntity> ToEntities(this IEnumerable<SteamKey> serviceModels)
-        {
-            IEnumerable<SteamKeyEntity> dataObjects = serviceModels.Select(serviceModel => serviceModel.ToDataObject());
-
-            return dataObjects;
-        }
     }
 }
