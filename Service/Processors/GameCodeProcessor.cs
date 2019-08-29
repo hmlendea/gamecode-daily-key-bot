@@ -69,6 +69,15 @@ namespace GameCodeDailyKeyBot.Service.Processors
             logger.Debug(MyOperation.LogIn, OperationStatus.Success, logInfos);
         }
 
+        public void LogOut()
+        {
+            logger.Info(MyOperation.LogOut, OperationStatus.Started, logInfos);
+
+            GoToUrl(LogOutUrl);
+
+            logger.Debug(MyOperation.LogOut, OperationStatus.Success, logInfos);
+        }
+
         public string GatherKey()
         {
             logger.Info(MyOperation.KeyGathering, OperationStatus.Started, logInfos);
