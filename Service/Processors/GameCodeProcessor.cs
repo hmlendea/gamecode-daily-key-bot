@@ -42,10 +42,21 @@ namespace GameCodeDailyKeyBot.Service.Processors
 
             GoToUrl(LogInUrl);
 
+            By popupSubmitButtonSelector = By.ClassName("csa-cta");
+            By popupCloseButtonSelector = By.XPath(@"/html/body/cloudflare-app[1]/div/div[3]/a");
+            By popupSlidingSelector = By.XPath(@"//div[contains(@class,'csa-slide-in-bottom')]");
             By usernameSelector = By.Name("email");
             By passwordSelector = By.Name("password");
             By logInButtonSelector = By.XPath(@"//*[@id='loginForm']/form/button");
             By giveawayButtonSelector = By.Id("gamesToggle_0");
+
+            WaitForElementToExist(popupSubmitButtonSelector);
+            Click(popupCloseButtonSelector);
+
+            while (IsElementVisible(popupSlidingSelector))
+            {
+                Wait();
+            }
 
             SetText(usernameSelector, account.Username + "@yopmail.com");
             SetText(passwordSelector, account.Password);
