@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 using NuciLog.Core;
@@ -13,7 +14,7 @@ namespace GameCodeDailyKeyBot.Service.Processors
 {
     public sealed class GameCodeProcessor : WebProcessor
     {
-        public string HomePageUrl => "https://gamecode.win/";
+        public string HomePageUrl => "https://gamecode.win";
         public string LogInUrl => $"{HomePageUrl}/login";
         public string LogOutUrl => $"{HomePageUrl}/logout";
         public string KeyExchangeUrl => $"{HomePageUrl}/exchange/keys";
@@ -42,24 +43,24 @@ namespace GameCodeDailyKeyBot.Service.Processors
 
             GoToUrl(LogInUrl);
 
-            By popupSubmitButtonSelector = By.ClassName("csa-cta");
+            By popupSelector = By.XPath(@"//cloudflare-app[1]");
+            By popupWiggleButtonSelector = By.XPath(@"//div[contains(@class,'csa-wiggle')]");
             By popupCloseButtonSelector = By.XPath(@"/html/body/cloudflare-app[1]/div/div[3]/a");
             By popupSlidingSelector = By.XPath(@"//div[contains(@class,'csa-slide-in-bottom')]");
             By usernameSelector = By.Name("email");
             By passwordSelector = By.Name("password");
             By logInButtonSelector = By.XPath(@"//*[@id='loginForm']/form/button");
             By giveawayButtonSelector = By.Id("gamesToggle_0");
-
-            WaitForElementToExist(popupSubmitButtonSelector);
-            Click(popupCloseButtonSelector);
-
-            while (IsElementVisible(popupSlidingSelector))
-            {
-                Wait();
-            }
-
+            
             SetText(usernameSelector, account.Username + "@yopmail.com");
             SetText(passwordSelector, account.Password);
+
+            WaitForElementToExist(popupCloseButtonSelector, TimeSpan.FromSeconds(1));
+            if (IsElementVisible(popupSelector))
+            {
+                Click(popupSelector);
+                Click(popupCloseButtonSelector);
+            }
             
             Click(logInButtonSelector);
             

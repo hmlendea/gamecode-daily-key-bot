@@ -100,7 +100,7 @@ namespace GameCodeDailyKeyBot.Service
             {
                 return GatherKey(account, driver);
             }
-            catch (WebDriverException ex)
+            catch (WebDriverException)
             {
                 throw;
             }
