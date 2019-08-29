@@ -100,6 +100,10 @@ namespace GameCodeDailyKeyBot.Service
             {
                 return GatherKey(account, driver);
             }
+            catch (WebDriverException ex)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 logger.Error(MyOperation.KeyGathering, OperationStatus.Failure, ex, new LogInfo(MyLogInfoKey.Username, account.Username));
@@ -111,13 +115,23 @@ namespace GameCodeDailyKeyBot.Service
         SteamKey GatherKey(SteamAccount account, IWebDriver driver)
         {
             string keyCode = null;
+            string mainWindow = driver.WindowHandles[0];
 
             using (GameCodeProcessor gameCodeProcessor = new GameCodeProcessor(driver, account, logger))
             {
                 gameCodeProcessor.LogIn();
                 keyCode = gameCodeProcessor.GatherKey();
-                driver.Manage().Cookies.DeleteAllCookies();
             }
+
+            driver.WindowHandles.Where(w => w != mainWindow).ToList()
+                .ForEach(w =>
+                {
+                    driver.SwitchTo().Window(w);
+                    driver.Close();
+                });
+
+            driver.SwitchTo().Window(mainWindow);
+            driver.Manage().Cookies.DeleteAllCookies();
 
             if (string.IsNullOrWhiteSpace(keyCode))
             {
