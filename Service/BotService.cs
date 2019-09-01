@@ -50,11 +50,6 @@ namespace GameCodeDailyKeyBot.Service
 
             IEnumerable<SteamAccount> accounts = accountRepository.GetAll().ToServiceModels();
 
-            if (!(driver is null))
-            {
-                driver.Quit();
-            }
-
             driver = SetupDriver();
 
             try
@@ -67,7 +62,10 @@ namespace GameCodeDailyKeyBot.Service
             }
             finally
             {
-                driver.Quit();
+                if (!(driver is null))
+                {
+                    driver.Quit();
+                }
             }
         }
 

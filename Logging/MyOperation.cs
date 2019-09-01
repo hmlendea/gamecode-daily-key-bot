@@ -10,6 +10,8 @@ namespace GameCodeDailyKeyBot.Logging
             
         }
 
+        public static Operation CrashRecovery => new MyOperation(nameof(CrashRecovery));
+
         public static Operation LogIn => new MyOperation(nameof(LogIn));
 
         public static Operation LogOut => new MyOperation(nameof(LogOut));
