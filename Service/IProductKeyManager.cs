@@ -8,6 +8,10 @@ namespace GameCodeDailyKeyBot.Service
     {
         void StoreProductKey(SteamKey key);
 
+        void StoreProductKeyLocally(SteamKey key);
+
+        void StoreProductKeyRemotely(SteamKey key);
+
         DateTime GetLatestClaimDate(string username);
     }
 }

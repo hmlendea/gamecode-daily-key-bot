@@ -50,6 +50,8 @@ namespace GameCodeDailyKeyBot.Service.Processors
             By usernameSelector = By.Name("email");
             By passwordSelector = By.Name("password");
             By logInButtonSelector = By.XPath(@"//*[@id='loginForm']/form/button");
+
+            By invalidLoginSelector = By.XPath(@"/html/body/div[3]/div[1]/div/div[1]/ul/li");
             By giveawayButtonSelector = By.Id("gamesToggle_0");
             
             SetText(usernameSelector, account.Username + "@yopmail.com");
@@ -64,7 +66,13 @@ namespace GameCodeDailyKeyBot.Service.Processors
             
             Click(logInButtonSelector);
             
-            WaitForElementToExist(giveawayButtonSelector);
+            WaitForAnyElementToExist(invalidLoginSelector, giveawayButtonSelector);
+
+            if (IsElementVisible(invalidLoginSelector))
+            {
+                logger.Error(MyOperation.LogIn, OperationStatus.Failure, logInfos);
+                throw new InvalidCredentialsException(account.Username);
+            }
 
             logger.Debug(MyOperation.LogIn, OperationStatus.Success, logInfos);
         }
@@ -94,8 +102,9 @@ namespace GameCodeDailyKeyBot.Service.Processors
 
             if (IsElementVisible(clockSelector))
             {
-                logger.Error(MyOperation.KeyGathering, OperationStatus.Failure, "This account already claimed a key today", logInfos);
-                return null;
+                Exception ex = new KeyAlreadyClaimedException(account.Username);
+                logger.Error(MyOperation.KeyGathering, OperationStatus.Failure, ex, logInfos);
+                throw ex;
             }
 
             string randomKey = GenerateRandomKey();
@@ -116,6 +125,9 @@ namespace GameCodeDailyKeyBot.Service.Processors
             }
 
             string key = GetText(receivedKeyInputSelector).ToUpper().Replace("YOUR KEY", "").Trim();
+            logger.Info(key);
+
+            Wait(1330000);
 
             logger.Debug(MyOperation.KeyGathering, OperationStatus.Success, logInfos);
             

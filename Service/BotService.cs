@@ -88,26 +88,43 @@ namespace GameCodeDailyKeyBot.Service
                     continue;
                 }
 
-                productKeyManager.StoreProductKey(key);
+                if (key.Code.Replace("-", "").Length == 15)
+                {
+                    productKeyManager.StoreProductKey(key);
+                }
+                else
+                {
+                    productKeyManager.StoreProductKeyLocally(key);
+                }
             }
         }
 
         SteamKey TryGatherKey(SteamAccount account, IWebDriver driver)
         {
+            SteamKey key = null;
+
             try
             {
-                return GatherKey(account, driver);
+                key = GatherKey(account, driver);
             }
             catch (WebDriverException)
             {
                 throw;
             }
+            catch (KeyAlreadyClaimedException)
+            {
+                key = new SteamKey();
+                key.Id = Guid.NewGuid().ToString();
+                key.DateReceived = DateTime.Now;
+                key.Username = account.Username;
+                key.Code = string.Empty;
+            }
             catch (Exception ex)
             {
                 logger.Error(MyOperation.KeyGathering, OperationStatus.Failure, ex, new LogInfo(MyLogInfoKey.Username, account.Username));
-
-                return null;
             }
+
+            return key;
         }
 
         SteamKey GatherKey(SteamAccount account, IWebDriver driver)
