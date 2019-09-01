@@ -40,10 +40,23 @@ namespace GameCodeDailyKeyBot.Service
 
         public void StoreProductKey(SteamKey key)
         {
-            logger.Info(MyOperation.KeySaving, OperationStatus.Started, new LogInfo(MyLogInfoKey.ProductKey, key.Code));
+            StoreProductKeyLocally(key);
+            StoreProductKeyRemotely(key);
+        }
+
+        public void StoreProductKeyLocally(SteamKey key)
+        {
+            logger.Info(MyOperation.LocalKeySaving, OperationStatus.Started, new LogInfo(MyLogInfoKey.ProductKey, key.Code));
 
             keyRepository.Add(key.ToDataObject());
             keyRepository.ApplyChanges();
+            
+            logger.Debug(MyOperation.LocalKeySaving, OperationStatus.Success, new LogInfo(MyLogInfoKey.ProductKey, key.Code));
+        }
+
+        public void StoreProductKeyRemotely(SteamKey key)
+        {
+            logger.Info(MyOperation.RemoteKeySaving, OperationStatus.Started, new LogInfo(MyLogInfoKey.ProductKey, key.Code));
 
             StoreProductKeyRequest request = BuildRequest(key.Code);
             string endpoint = BuildRequestUrl(request);
@@ -54,13 +67,14 @@ namespace GameCodeDailyKeyBot.Service
             if (!httpResponse.IsSuccessStatusCode)
             {
                 Exception exception = new HttpRequestException("Error sending the key to ProductKeyManager");
-                logger.Debug(MyOperation.KeySaving, OperationStatus.Success, exception, new LogInfo(MyLogInfoKey.ProductKey, key.Code));
+                logger.Debug(MyOperation.RemoteKeySaving, OperationStatus.Success, exception, new LogInfo(MyLogInfoKey.ProductKey, key.Code));
 
                 throw exception;
             }
             
-            logger.Debug(MyOperation.KeySaving, OperationStatus.Success, new LogInfo(MyLogInfoKey.ProductKey, key.Code));
+            logger.Debug(MyOperation.RemoteKeySaving, OperationStatus.Success, new LogInfo(MyLogInfoKey.ProductKey, key.Code));
         }
+
 
         public DateTime GetLatestClaimDate(string username)
         {

@@ -18,6 +18,8 @@ namespace GameCodeDailyKeyBot.Logging
 
         public static Operation KeyGathering => new MyOperation(nameof(KeyGathering));
 
-        public static Operation KeySaving => new MyOperation(nameof(KeySaving));
+        public static Operation LocalKeySaving => new MyOperation(nameof(LocalKeySaving));
+
+        public static Operation RemoteKeySaving => new MyOperation(nameof(RemoteKeySaving));
     }
 }
