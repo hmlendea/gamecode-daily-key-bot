@@ -10,8 +10,6 @@ namespace GameCodeDailyKeyBot.Logging
             
         }
 
-        public static LogInfoKey RetryDelay => new MyLogInfoKey(nameof(RetryDelay));
-
         public static LogInfoKey Username => new MyLogInfoKey(nameof(Username));
 
         public static LogInfoKey ProductKey => new MyLogInfoKey(nameof(ProductKey));
