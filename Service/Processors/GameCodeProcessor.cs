@@ -49,10 +49,20 @@ namespace GameCodeDailyKeyBot.Service.Processors
             By popupSlidingSelector = By.XPath(@"//div[contains(@class,'csa-slide-in-bottom')]");
             By usernameSelector = By.Name("email");
             By passwordSelector = By.Name("password");
+
             By logInButtonSelector = By.XPath(@"//*[@id='loginForm']/form/button");
+            By logOutButtonSelector = By.XPath(@"//a[contains(@href,'" + LogOutUrl + "')]");
 
             By invalidLoginSelector = By.XPath(@"/html/body/div[3]/div[1]/div/div[1]/ul/li");
             By giveawayButtonSelector = By.Id("gamesToggle_0");
+
+            WaitForAnyElementToExist(logInButtonSelector, logOutButtonSelector);
+
+            if (DoesElementExist(logOutButtonSelector))
+            {
+                LogOut();
+                GoToUrl(LogInUrl);
+            }
             
             SetText(usernameSelector, account.Username + "@yopmail.com");
             SetText(passwordSelector, account.Password);
