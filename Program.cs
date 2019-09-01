@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,8 @@ namespace SteamGiveawaysBot
         static ProductKeyManagerSettings productKeyManagerSettings;
 
         static IServiceProvider serviceProvider;
+
+        static TimeSpan RetryDelay => TimeSpan.FromMinutes(5);
 
         static void Main(string[] args)
         {
@@ -98,8 +101,12 @@ namespace SteamGiveawaysBot
                 {
                     logger.Fatal(Operation.Unknown, OperationStatus.Failure, ex);
                 }
-                
-                logger.Info(MyOperation.CrashRecovery);
+
+                logger.Info(
+                    MyOperation.CrashRecovery,
+                    new LogInfo(MyLogInfoKey.RetryDelay, RetryDelay.TotalMilliseconds));
+                    
+                Thread.Sleep((int)RetryDelay.TotalMilliseconds);
             }
         }
     }
