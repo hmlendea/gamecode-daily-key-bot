@@ -125,9 +125,6 @@ namespace GameCodeDailyKeyBot.Service.Processors
             }
 
             string key = GetText(receivedKeyInputSelector).ToUpper().Replace("YOUR KEY", "").Trim();
-            logger.Info(key);
-
-            Wait(1330000);
 
             logger.Debug(MyOperation.KeyGathering, OperationStatus.Success, logInfos);
             
