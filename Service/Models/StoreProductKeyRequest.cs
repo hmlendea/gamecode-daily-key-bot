@@ -8,6 +8,8 @@ namespace GameCodeDailyKeyBot.Service.Models
 
         public string Key { get; set; }
 
+        public string Owner { get; set; }
+
         public string Status { get; set; }
 
         public string Hmac { get; set; }
