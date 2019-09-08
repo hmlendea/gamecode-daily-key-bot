@@ -12,6 +12,7 @@ namespace GameCodeDailyKeyBot.Security
                 obj.Store +
                 obj.Product +
                 obj.Key +
+                obj.Owner +
                 obj.Status;
 
             string hmacToken = ComputeHmacToken(stringForSigning, sharedSecretKey);
