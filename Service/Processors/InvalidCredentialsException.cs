@@ -3,7 +3,7 @@ using System;
 namespace GameCodeDailyKeyBot.Service.Processors
 {
     /// <summary>
-    /// Account suspended exception.
+    /// Invalid credentials exception.
     /// </summary>
     public class InvalidCredentialsException : Exception
     {
