@@ -4,6 +4,7 @@ using System.Linq;
 
 using NuciDAL.Repositories;
 using NuciLog.Core;
+using NuciWeb;
 
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -131,9 +132,10 @@ namespace GameCodeDailyKeyBot.Service
         {
             string keyCode = null;
             string mainWindow = driver.WindowHandles[0];
-
-            using (GameCodeProcessor gameCodeProcessor = new GameCodeProcessor(driver, account, logger))
+            
+            using (WebProcessor webProcessor = new WebProcessor(driver))
             {
+                GameCodeProcessor gameCodeProcessor = new GameCodeProcessor(webProcessor, account, logger);
                 gameCodeProcessor.LogIn();
                 keyCode = gameCodeProcessor.GatherKey();
                 gameCodeProcessor.LogOut();
