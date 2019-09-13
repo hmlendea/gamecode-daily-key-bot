@@ -12,26 +12,29 @@ using GameCodeDailyKeyBot.Service.Models;
 
 namespace GameCodeDailyKeyBot.Service.Processors
 {
-    public sealed class GameCodeProcessor : WebProcessor
+    public sealed class GameCodeProcessor
     {
         public string HomePageUrl => "https://gamecode.win";
         public string LogInUrl => $"{HomePageUrl}/login";
         public string LogOutUrl => $"{HomePageUrl}/logout";
         public string KeyExchangeUrl => $"{HomePageUrl}/exchange/keys";
 
-        SteamAccount account;
-        ILogger logger;
+        readonly SteamAccount account;
+        readonly IWebProcessor webProcessor;
+        readonly ILogger logger;
+
         IEnumerable<LogInfo> logInfos;
 
         public GameCodeProcessor(
-            IWebDriver driver,
+            IWebProcessor webProcessor,
             SteamAccount account,
             ILogger logger)
-            : base(driver)
         {
+            this.webProcessor = webProcessor;
             this.account = account;
             this.logger = logger;
-            this.logInfos = new List<LogInfo>
+
+            logInfos = new List<LogInfo>
             {
                 new LogInfo(MyLogInfoKey.Username, account.Username)
             };
@@ -41,7 +44,7 @@ namespace GameCodeDailyKeyBot.Service.Processors
         {
             logger.Info(MyOperation.LogIn, OperationStatus.Started, logInfos);
 
-            GoToUrl(LogInUrl);
+            webProcessor.GoToUrl(LogInUrl);
 
             By popupSelector = By.XPath(@"//cloudflare-app[1]");
             By popupWiggleButtonSelector = By.XPath(@"//div[contains(@class,'csa-wiggle')]");
@@ -56,29 +59,29 @@ namespace GameCodeDailyKeyBot.Service.Processors
             By invalidLoginSelector = By.XPath(@"/html/body/div[3]/div[1]/div/div[1]/ul/li");
             By giveawayButtonSelector = By.Id("gamesToggle_0");
 
-            WaitForAnyElementToExist(logInButtonSelector, logOutButtonSelector);
+            webProcessor.WaitForAnyElementToExist(logInButtonSelector, logOutButtonSelector);
 
-            if (DoesElementExist(logOutButtonSelector))
+            if (webProcessor.DoesElementExist(logOutButtonSelector))
             {
                 LogOut();
-                GoToUrl(LogInUrl);
+                webProcessor.GoToUrl(LogInUrl);
             }
             
-            SetText(usernameSelector, account.Username + "@yopmail.com");
-            SetText(passwordSelector, account.Password);
+            webProcessor.SetText(usernameSelector, account.Username + "@yopmail.com");
+            webProcessor.SetText(passwordSelector, account.Password);
 
-            WaitForElementToExist(popupCloseButtonSelector, TimeSpan.FromSeconds(1));
-            if (IsElementVisible(popupSelector))
+            webProcessor.WaitForElementToExist(popupCloseButtonSelector, TimeSpan.FromSeconds(1));
+            if (webProcessor.IsElementVisible(popupSelector))
             {
-                Click(popupSelector);
-                Click(popupCloseButtonSelector);
+                webProcessor.Click(popupSelector);
+                webProcessor.Click(popupCloseButtonSelector);
             }
             
-            Click(logInButtonSelector);
+            webProcessor.Click(logInButtonSelector);
             
-            WaitForAnyElementToExist(invalidLoginSelector, giveawayButtonSelector);
+            webProcessor.WaitForAnyElementToExist(invalidLoginSelector, giveawayButtonSelector);
 
-            if (IsElementVisible(invalidLoginSelector))
+            if (webProcessor.IsElementVisible(invalidLoginSelector))
             {
                 logger.Error(MyOperation.LogIn, OperationStatus.Failure, logInfos);
                 throw new InvalidCredentialsException(account.Username);
@@ -91,7 +94,7 @@ namespace GameCodeDailyKeyBot.Service.Processors
         {
             logger.Info(MyOperation.LogOut, OperationStatus.Started, logInfos);
 
-            GoToUrl(LogOutUrl);
+            webProcessor.GoToUrl(LogOutUrl);
 
             logger.Debug(MyOperation.LogOut, OperationStatus.Success, logInfos);
         }
@@ -100,7 +103,7 @@ namespace GameCodeDailyKeyBot.Service.Processors
         {
             logger.Info(MyOperation.KeyGathering, OperationStatus.Started, logInfos);
 
-            GoToUrl(KeyExchangeUrl);
+            webProcessor.GoToUrl(KeyExchangeUrl);
 
             By keyToSendInputSelector = By.Id("steam_key");
             By receivedKeyInputSelector = By.Id("inputKey");
@@ -108,9 +111,9 @@ namespace GameCodeDailyKeyBot.Service.Processors
             By giveawaysButtonSelector = By.XPath("/html/body/div[2]/div[1]/div/a[1]");
             By clockSelector = By.ClassName("flip-clock-active");
             
-            WaitForAnyElementToBeVisible(clockSelector, keyToSendInputSelector);
+            webProcessor.WaitForAnyElementToBeVisible(clockSelector, keyToSendInputSelector);
 
-            if (IsElementVisible(clockSelector))
+            if (webProcessor.IsElementVisible(clockSelector))
             {
                 Exception ex = new KeyAlreadyClaimedException(account.Username);
                 logger.Error(MyOperation.KeyGathering, OperationStatus.Failure, ex, logInfos);
@@ -120,21 +123,21 @@ namespace GameCodeDailyKeyBot.Service.Processors
             string randomKey = GenerateRandomKey();
 
             // TODO: Trick to bypass the ads
-            Click(giveawaysButtonSelector);
-            Wait();
-            NewTab(KeyExchangeUrl);
+            webProcessor.Click(giveawaysButtonSelector);
+            webProcessor.Wait();
+            webProcessor.NewTab(KeyExchangeUrl);
 
-            SetText(keyToSendInputSelector, randomKey);
+            webProcessor.SetText(keyToSendInputSelector, randomKey);
 
-            Click(submitButtonSelector);
-            WaitForElementToExist(receivedKeyInputSelector);
+            webProcessor.Click(submitButtonSelector);
+            webProcessor.WaitForElementToExist(receivedKeyInputSelector);
 
-            if (string.IsNullOrWhiteSpace(GetText(receivedKeyInputSelector)))
+            if (string.IsNullOrWhiteSpace(webProcessor.GetText(receivedKeyInputSelector)))
             {
-                Wait(1000);
+                webProcessor.Wait(1000);
             }
 
-            string key = GetText(receivedKeyInputSelector).ToUpper().Replace("YOUR KEY", "").Trim();
+            string key = webProcessor.GetText(receivedKeyInputSelector).ToUpper().Replace("YOUR KEY", "").Trim();
 
             logger.Debug(MyOperation.KeyGathering, OperationStatus.Success, logInfos);
             
