@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NuciDAL.Repositories;
 using NuciLog;
+using NuciLog.Configuration;
 using NuciLog.Core;
 using NuciSecurity.HMAC;
 
@@ -26,6 +27,7 @@ namespace SteamGiveawaysBot
         static DataSettings dataSettings;
         static DebugSettings debugSettings;
         static ProductKeyManagerSettings productKeyManagerSettings;
+        static NuciLoggerSettings loggingSettings;
 
         static IServiceProvider serviceProvider;
 
@@ -50,6 +52,7 @@ namespace SteamGiveawaysBot
             dataSettings = new DataSettings();
             debugSettings = new DebugSettings();
             productKeyManagerSettings = new ProductKeyManagerSettings();
+            loggingSettings = new NuciLoggerSettings();
             
             IConfiguration config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", true, true)
@@ -59,6 +62,7 @@ namespace SteamGiveawaysBot
             config.Bind(nameof(DataSettings), dataSettings);
             config.Bind(nameof(DebugSettings), debugSettings);
             config.Bind(nameof(ProductKeyManagerSettings), productKeyManagerSettings);
+            config.Bind(nameof(NuciLoggerSettings), loggingSettings);
 
             return config;
         }
@@ -70,6 +74,7 @@ namespace SteamGiveawaysBot
                 .AddSingleton(dataSettings)
                 .AddSingleton(debugSettings)
                 .AddSingleton(productKeyManagerSettings)
+                .AddSingleton(loggingSettings)
                 .AddSingleton<ILogger, NuciLogger>()
                 .AddSingleton<IRepository<SteamAccountEntity>>(s => new CsvRepository<SteamAccountEntity>(dataSettings.AccountsStorePath))
                 .AddSingleton<IRepository<SteamKeyEntity>>(s => new CsvRepository<SteamKeyEntity>(dataSettings.KeysStorePath))
