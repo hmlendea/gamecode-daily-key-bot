@@ -66,15 +66,23 @@ namespace GameCodeDailyKeyBot.Service
 
             if (!httpResponse.IsSuccessStatusCode)
             {
-                Exception exception = new HttpRequestException("Error sending the key to ProductKeyManager");
-                logger.Debug(MyOperation.RemoteKeySaving, OperationStatus.Success, exception, new LogInfo(MyLogInfoKey.ProductKey, key.Code));
+                // TODO: Broken async
+                string responseString = httpResponse.Content.ReadAsStringAsync().Result;
 
-                throw exception;
+                if (responseString.Contains("already exists"))
+                {
+                    logger.Debug(MyOperation.RemoteKeySaving, OperationStatus.Failure, new LogInfo(MyLogInfoKey.ProductKey, key.Code));
+                }
+                else
+                {
+                    Exception exception = new HttpRequestException("Error sending the key to ProductKeyManager");
+                    logger.Debug(MyOperation.RemoteKeySaving, OperationStatus.Failure, exception, new LogInfo(MyLogInfoKey.ProductKey, key.Code));
+                    throw exception;
+                }
             }
             
             logger.Debug(MyOperation.RemoteKeySaving, OperationStatus.Success, new LogInfo(MyLogInfoKey.ProductKey, key.Code));
         }
-
 
         public DateTime GetLatestClaimDate(string username)
         {
