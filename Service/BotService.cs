@@ -57,16 +57,9 @@ namespace GameCodeDailyKeyBot.Service
             {
                 ProcessAccounts(accounts);
             }
-            catch (Exception)
-            {
-                throw;
-            }
             finally
             {
-                if (!(driver is null))
-                {
-                    driver.Quit();
-                }
+                driver?.Quit();
             }
         }
 
@@ -115,10 +108,7 @@ namespace GameCodeDailyKeyBot.Service
             catch (KeyAlreadyClaimedException)
             {
                 key = new SteamKey();
-                key.Id = Guid.NewGuid().ToString();
-                key.DateReceived = DateTime.Now;
                 key.Username = account.Username;
-                key.Code = string.Empty;
             }
             catch (Exception ex)
             {
@@ -133,23 +123,14 @@ namespace GameCodeDailyKeyBot.Service
             string keyCode = null;
             string mainWindow = driver.WindowHandles[0];
             
+            GameCodeProcessor gameCodeProcessor;
             using (WebProcessor webProcessor = new WebProcessor(driver))
             {
-                GameCodeProcessor gameCodeProcessor = new GameCodeProcessor(webProcessor, account, logger);
+                gameCodeProcessor = new GameCodeProcessor(driver, webProcessor, account, logger);
                 gameCodeProcessor.LogIn();
                 keyCode = gameCodeProcessor.GatherKey();
-                gameCodeProcessor.LogOut();
             }
-
-            driver.WindowHandles.Where(w => w != mainWindow).ToList()
-                .ForEach(w =>
-                {
-                    driver.SwitchTo().Window(w);
-                    driver.Close();
-                });
-
-            driver.SwitchTo().Window(mainWindow);
-            driver.Manage().Cookies.DeleteAllCookies();
+            gameCodeProcessor.ClearCookies();
 
             if (string.IsNullOrWhiteSpace(keyCode))
             {

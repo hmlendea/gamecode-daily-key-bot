@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using NuciLog.Core;
 using NuciWeb;
@@ -20,16 +21,19 @@ namespace GameCodeDailyKeyBot.Service.Processors
         public string KeyExchangeUrl => $"{HomePageUrl}/exchange/keys";
 
         readonly SteamAccount account;
+        readonly IWebDriver webDriver;
         readonly IWebProcessor webProcessor;
         readonly ILogger logger;
 
         IEnumerable<LogInfo> logInfos;
 
         public GameCodeProcessor(
+            IWebDriver webDriver,
             IWebProcessor webProcessor,
             SteamAccount account,
             ILogger logger)
         {
+            this.webDriver = webDriver;
             this.webProcessor = webProcessor;
             this.account = account;
             this.logger = logger;
@@ -142,6 +146,23 @@ namespace GameCodeDailyKeyBot.Service.Processors
             logger.Debug(MyOperation.KeyGathering, OperationStatus.Success, logInfos);
             
             return key;
+        }
+
+        public void ClearCookies()
+        {
+            string mainWindow = webDriver.WindowHandles[0];
+
+            webDriver.WindowHandles
+                .Skip(1)
+                .ToList()
+                .ForEach(w =>
+                {
+                    webDriver.SwitchTo().Window(w);
+                    webDriver.Close();
+                });
+
+            webDriver.SwitchTo().Window(mainWindow);
+            webDriver.Manage().Cookies.DeleteAllCookies();
         }
 
         string GenerateRandomKey()
