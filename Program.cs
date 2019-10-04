@@ -10,12 +10,13 @@ using NuciLog.Configuration;
 using NuciLog.Core;
 using NuciSecurity.HMAC;
 
+using GameCodeDailyKeyBot.Client;
+using GameCodeDailyKeyBot.Client.Models;
+using GameCodeDailyKeyBot.Client.Security;
 using GameCodeDailyKeyBot.Configuration;
 using GameCodeDailyKeyBot.DataAccess.DataObjects;
 using GameCodeDailyKeyBot.Logging;
-using GameCodeDailyKeyBot.Security;
 using GameCodeDailyKeyBot.Service;
-using GameCodeDailyKeyBot.Service.Models;
 
 namespace SteamGiveawaysBot
 {
@@ -79,7 +80,8 @@ namespace SteamGiveawaysBot
                 .AddSingleton<IRepository<SteamAccountEntity>>(s => new CsvRepository<SteamAccountEntity>(dataSettings.AccountsStorePath))
                 .AddSingleton<IRepository<SteamKeyEntity>>(s => new CsvRepository<SteamKeyEntity>(dataSettings.KeysStorePath))
                 .AddSingleton<IHmacEncoder<StoreProductKeyRequest>, StoreProductKeyRequestHmacEncoder>()
-                .AddSingleton<IProductKeyManager, ProductKeyManager>()
+                .AddSingleton<IProductKeyManagerClient, ProductKeyManagerClient>()
+                .AddSingleton<IProductKeySaver, ProductKeySaver>()
                 .AddSingleton<IBotService, BotService>()
                 .BuildServiceProvider();
         }

@@ -23,7 +23,7 @@ namespace GameCodeDailyKeyBot.Service
         public bool IsRunning { get; private set; }
 
         readonly IRepository<SteamAccountEntity> accountRepository;
-        readonly IProductKeyManager productKeyManager;
+        readonly IProductKeySaver productKeyManager;
 
         readonly BotSettings botSettings;
         readonly DebugSettings debugSettings;
@@ -33,7 +33,7 @@ namespace GameCodeDailyKeyBot.Service
 
         public BotService(
             IRepository<SteamAccountEntity> accountRepository,
-            IProductKeyManager productKeyManager,
+            IProductKeySaver productKeyManager,
             BotSettings botSettings,
             DebugSettings debugSettings,
             ILogger logger)

@@ -1,60 +1,37 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 
-using NuciDAL.Repositories;
 using NuciLog.Core;
 using NuciSecurity.HMAC;
 
-using GameCodeDailyKeyBot.DataAccess.DataObjects;
+using GameCodeDailyKeyBot.Client.Models;
 using GameCodeDailyKeyBot.Configuration;
 using GameCodeDailyKeyBot.Logging;
-using GameCodeDailyKeyBot.Service.Mappings;
 using GameCodeDailyKeyBot.Service.Models;
 
-namespace GameCodeDailyKeyBot.Service
+namespace GameCodeDailyKeyBot.Client
 {
-    public sealed class ProductKeyManager : IProductKeyManager
+    public sealed class ProductKeyManagerClient : IProductKeyManagerClient
     {
         HttpClient httpClient;
 
         readonly IHmacEncoder<StoreProductKeyRequest> storeProductKeyRequestHmacEncoder;
-        readonly IRepository<SteamKeyEntity> keyRepository;
         readonly ProductKeyManagerSettings productKeyManagerSettings;
         readonly ILogger logger;
 
-        public ProductKeyManager(
+        public ProductKeyManagerClient(
             IHmacEncoder<StoreProductKeyRequest> storeProductKeyRequestHmacEncoder,
-            IRepository<SteamKeyEntity> keyRepository,
             ProductKeyManagerSettings productKeyManagerSettings,
             ILogger logger)
         {
             httpClient = new HttpClient();
 
             this.storeProductKeyRequestHmacEncoder = storeProductKeyRequestHmacEncoder;
-            this.keyRepository = keyRepository;
             this.productKeyManagerSettings = productKeyManagerSettings;
             this.logger = logger;
         }
 
         public void StoreProductKey(SteamKey key)
-        {
-            StoreProductKeyLocally(key);
-            StoreProductKeyRemotely(key);
-        }
-
-        public void StoreProductKeyLocally(SteamKey key)
-        {
-            logger.Info(MyOperation.LocalKeySaving, OperationStatus.Started, new LogInfo(MyLogInfoKey.ProductKey, key.Code));
-
-            keyRepository.Add(key.ToDataObject());
-            keyRepository.ApplyChanges();
-            
-            logger.Debug(MyOperation.LocalKeySaving, OperationStatus.Success, new LogInfo(MyLogInfoKey.ProductKey, key.Code));
-        }
-
-        public void StoreProductKeyRemotely(SteamKey key)
         {
             logger.Info(MyOperation.RemoteKeySaving, OperationStatus.Started, new LogInfo(MyLogInfoKey.ProductKey, key.Code));
 
@@ -73,26 +50,6 @@ namespace GameCodeDailyKeyBot.Service
             }
             
             logger.Debug(MyOperation.RemoteKeySaving, OperationStatus.Success, new LogInfo(MyLogInfoKey.ProductKey, key.Code));
-        }
-
-
-        public DateTime GetLatestClaimDate(string username)
-        {
-            IEnumerable<SteamKey> claimedKeys = keyRepository
-                .GetAll()
-                .ToServiceModels()
-                .Where(x => x.Username == username);
-            
-            if (!claimedKeys.Any())
-            {
-                return DateTime.MinValue;
-            }
-
-            SteamKey latestClaimedKey = claimedKeys
-                .OrderBy(x => x.DateReceived)
-                .Last();
-
-            return latestClaimedKey.DateReceived;
         }
 
         StoreProductKeyRequest BuildRequest(string key)

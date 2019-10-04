@@ -1,4 +1,4 @@
-namespace GameCodeDailyKeyBot.Service.Models
+namespace GameCodeDailyKeyBot.Client.Models
 {
     public sealed class StoreProductKeyRequest
     {
