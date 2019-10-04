@@ -1,8 +1,8 @@
 using GameCodeDailyKeyBot.Service.Models;
 
-namespace GameCodeDailyKeyBot.Service.Processors
+namespace GameCodeDailyKeyBot.Service
 {
-    public interface IGameCodeProcessor
+    public interface IGameCodeKeyGatherer
     {
         void LogIn(SteamAccount account);
 

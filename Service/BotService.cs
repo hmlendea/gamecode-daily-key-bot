@@ -11,7 +11,6 @@ using GameCodeDailyKeyBot.DataAccess.DataObjects;
 using GameCodeDailyKeyBot.Logging;
 using GameCodeDailyKeyBot.Service.Mappings;
 using GameCodeDailyKeyBot.Service.Models;
-using GameCodeDailyKeyBot.Service.Processors;
 
 namespace GameCodeDailyKeyBot.Service
 {
@@ -19,7 +18,7 @@ namespace GameCodeDailyKeyBot.Service
     {
         public bool IsRunning { get; private set; }
 
-        readonly IGameCodeProcessor gameCodeProcessor;
+        readonly IGameCodeKeyGatherer gameCodeProcessor;
         readonly IRepository<SteamAccountEntity> accountRepository;
         readonly IProductKeySaver productKeyManager;
 
@@ -28,7 +27,7 @@ namespace GameCodeDailyKeyBot.Service
         readonly ILogger logger;
 
         public BotService(
-            IGameCodeProcessor gameCodeProcessor,
+            IGameCodeKeyGatherer gameCodeProcessor,
             IRepository<SteamAccountEntity> accountRepository,
             IProductKeySaver productKeyManager,
             BotSettings botSettings,

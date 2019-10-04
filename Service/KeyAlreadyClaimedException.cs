@@ -1,6 +1,6 @@
 using System;
 
-namespace GameCodeDailyKeyBot.Service.Processors
+namespace GameCodeDailyKeyBot.Service
 {
     /// <summary>
     /// Account suspended exception.
