@@ -55,14 +55,6 @@ namespace GameCodeDailyKeyBot.Service.Processors
 
             By invalidLoginSelector = By.XPath(@"/html/body/div[3]/div[1]/div/div[1]/ul/li");
             By giveawayButtonSelector = By.Id("gamesToggle_0");
-
-            webProcessor.WaitForAnyElementToExist(logInButtonSelector, logOutButtonSelector);
-
-            if (webProcessor.DoesElementExist(logOutButtonSelector))
-            {
-                LogOut();
-                webProcessor.GoToUrl(LogInUrl);
-            }
             
             webProcessor.SetText(usernameSelector, account.Username + "@yopmail.com");
             webProcessor.SetText(passwordSelector, account.Password);
@@ -75,7 +67,6 @@ namespace GameCodeDailyKeyBot.Service.Processors
             }
             
             webProcessor.Click(logInButtonSelector);
-            
             webProcessor.WaitForAnyElementToExist(invalidLoginSelector, giveawayButtonSelector);
 
             if (webProcessor.IsElementVisible(invalidLoginSelector))
