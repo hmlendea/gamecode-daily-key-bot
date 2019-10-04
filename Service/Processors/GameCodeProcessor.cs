@@ -13,38 +13,32 @@ using GameCodeDailyKeyBot.Service.Models;
 
 namespace GameCodeDailyKeyBot.Service.Processors
 {
-    public sealed class GameCodeProcessor
+    public sealed class GameCodeProcessor : IGameCodeProcessor
     {
         public string HomePageUrl => "https://gamecode.win";
         public string LogInUrl => $"{HomePageUrl}/login";
         public string LogOutUrl => $"{HomePageUrl}/logout";
         public string KeyExchangeUrl => $"{HomePageUrl}/exchange/keys";
 
-        readonly SteamAccount account;
         readonly IWebDriver webDriver;
         readonly IWebProcessor webProcessor;
         readonly ILogger logger;
 
-        IEnumerable<LogInfo> logInfos;
+        IList<LogInfo> logInfos;
 
         public GameCodeProcessor(
             IWebDriver webDriver,
             IWebProcessor webProcessor,
-            SteamAccount account,
             ILogger logger)
         {
             this.webDriver = webDriver;
             this.webProcessor = webProcessor;
-            this.account = account;
             this.logger = logger;
 
-            logInfos = new List<LogInfo>
-            {
-                new LogInfo(MyLogInfoKey.Username, account.Username)
-            };
+            logInfos = new List<LogInfo>();
         }
 
-        public void LogIn()
+        public void LogIn(SteamAccount account)
         {
             logger.Info(MyOperation.LogIn, OperationStatus.Started, logInfos);
 
@@ -91,6 +85,8 @@ namespace GameCodeDailyKeyBot.Service.Processors
                 throw new InvalidCredentialsException(account.Username);
             }
 
+            logInfos.Add(new LogInfo(MyLogInfoKey.Username, account.Username));
+
             logger.Debug(MyOperation.LogIn, OperationStatus.Success, logInfos);
         }
 
@@ -119,7 +115,7 @@ namespace GameCodeDailyKeyBot.Service.Processors
 
             if (webProcessor.IsElementVisible(clockSelector))
             {
-                Exception ex = new KeyAlreadyClaimedException(account.Username);
+                Exception ex = new KeyAlreadyClaimedException();
                 logger.Error(MyOperation.KeyGathering, OperationStatus.Failure, ex, logInfos);
                 throw ex;
             }
