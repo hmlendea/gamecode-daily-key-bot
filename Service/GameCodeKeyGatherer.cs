@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Authentication;
 
@@ -12,9 +11,9 @@ using OpenQA.Selenium;
 using GameCodeDailyKeyBot.Logging;
 using GameCodeDailyKeyBot.Service.Models;
 
-namespace GameCodeDailyKeyBot.Service.Processors
+namespace GameCodeDailyKeyBot.Service
 {
-    public sealed class GameCodeProcessor : IGameCodeProcessor
+    public sealed class GameCodeKeyGatherer : IGameCodeKeyGatherer
     {
         public string HomePageUrl => "https://gamecode.win";
         public string LogInUrl => $"{HomePageUrl}/login";
@@ -25,7 +24,7 @@ namespace GameCodeDailyKeyBot.Service.Processors
         readonly IWebProcessor webProcessor;
         readonly ILogger logger;
 
-        public GameCodeProcessor(
+        public GameCodeKeyGatherer(
             IWebDriver webDriver,
             IWebProcessor webProcessor,
             ILogger logger)
