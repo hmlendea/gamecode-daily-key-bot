@@ -1,8 +1,8 @@
 using NuciSecurity.HMAC;
 
-using GameCodeDailyKeyBot.Service.Models;
+using GameCodeDailyKeyBot.Client.Models;
 
-namespace GameCodeDailyKeyBot.Security
+namespace GameCodeDailyKeyBot.Client.Security
 {
     public sealed class StoreProductKeyRequestHmacEncoder : HmacEncoder<StoreProductKeyRequest>
     {

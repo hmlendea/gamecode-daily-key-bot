@@ -4,7 +4,7 @@ using GameCodeDailyKeyBot.Service.Models;
 
 namespace GameCodeDailyKeyBot.Service
 {
-    public interface IProductKeyManager
+    public interface IProductKeySaver
     {
         void StoreProductKey(SteamKey key);
 
