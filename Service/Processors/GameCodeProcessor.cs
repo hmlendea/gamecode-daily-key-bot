@@ -25,8 +25,6 @@ namespace GameCodeDailyKeyBot.Service.Processors
         readonly IWebProcessor webProcessor;
         readonly ILogger logger;
 
-        IList<LogInfo> logInfos;
-
         public GameCodeProcessor(
             IWebDriver webDriver,
             IWebProcessor webProcessor,
@@ -35,13 +33,12 @@ namespace GameCodeDailyKeyBot.Service.Processors
             this.webDriver = webDriver;
             this.webProcessor = webProcessor;
             this.logger = logger;
-
-            logInfos = new List<LogInfo>();
         }
 
         public void LogIn(SteamAccount account)
         {
-            logger.Info(MyOperation.LogIn, OperationStatus.Started, logInfos);
+            LogInfo usernameLogInfo = new LogInfo(MyLogInfoKey.Username, account.Username);
+            logger.Info(MyOperation.LogIn, OperationStatus.Started, usernameLogInfo);
 
             webProcessor.GoToUrl(LogInUrl);
 
@@ -52,6 +49,7 @@ namespace GameCodeDailyKeyBot.Service.Processors
             By usernameSelector = By.Name("email");
             By passwordSelector = By.Name("password");
 
+            By bannerSelector = By.XPath(@"/html/body/div[8]/div[1]/div");
             By logInButtonSelector = By.XPath(@"//*[@id='loginForm']/form/button");
             By logOutButtonSelector = By.XPath(@"//a[contains(@href,'" + LogOutUrl + "')]");
 
@@ -82,27 +80,38 @@ namespace GameCodeDailyKeyBot.Service.Processors
 
             if (webProcessor.IsElementVisible(invalidLoginSelector))
             {
-                logger.Error(MyOperation.LogIn, OperationStatus.Failure, logInfos);
+                logger.Error(MyOperation.LogIn, OperationStatus.Failure, usernameLogInfo);
                 throw new AuthenticationException(account.Username);
             }
 
-            logInfos.Add(new LogInfo(MyLogInfoKey.Username, account.Username));
-
-            logger.Debug(MyOperation.LogIn, OperationStatus.Success, logInfos);
+            logger.Debug(MyOperation.LogIn, OperationStatus.Success, usernameLogInfo);
         }
 
         public void LogOut()
         {
-            logger.Info(MyOperation.LogOut, OperationStatus.Started, logInfos);
+            logger.Info(MyOperation.LogOut, OperationStatus.Started);
+            
+            By bannerSelector = By.XPath(@"/html/body/div[8]/div[1]/div");
 
-            webProcessor.GoToUrl(LogOutUrl);
+            webDriver.WindowHandles
+                .Skip(1)
+                .ToList()
+                .ForEach(tab =>
+                {
+                    webDriver.SwitchTo().Window(tab);
+                    webDriver.Close();
+                });
+                
+            webProcessor.NewTab(LogOutUrl);
+            webProcessor.WaitForElementToExist(bannerSelector);
+            webDriver.Manage().Cookies.DeleteAllCookies();
 
-            logger.Debug(MyOperation.LogOut, OperationStatus.Success, logInfos);
+            logger.Debug(MyOperation.LogOut, OperationStatus.Success);
         }
 
         public string GatherKey()
         {
-            logger.Info(MyOperation.KeyGathering, OperationStatus.Started, logInfos);
+            logger.Info(MyOperation.KeyGathering, OperationStatus.Started);
 
             webProcessor.GoToUrl(KeyExchangeUrl);
 
@@ -117,7 +126,7 @@ namespace GameCodeDailyKeyBot.Service.Processors
             if (webProcessor.IsElementVisible(clockSelector))
             {
                 Exception ex = new KeyAlreadyClaimedException();
-                logger.Error(MyOperation.KeyGathering, OperationStatus.Failure, ex, logInfos);
+                logger.Error(MyOperation.KeyGathering, OperationStatus.Failure, ex);
                 throw ex;
             }
 
@@ -140,26 +149,9 @@ namespace GameCodeDailyKeyBot.Service.Processors
 
             string key = webProcessor.GetText(receivedKeyInputSelector).ToUpper().Replace("YOUR KEY", "").Trim();
 
-            logger.Debug(MyOperation.KeyGathering, OperationStatus.Success, logInfos);
+            logger.Debug(MyOperation.KeyGathering, OperationStatus.Success);
             
             return key;
-        }
-
-        public void ClearCookies()
-        {
-            string mainWindow = webDriver.WindowHandles[0];
-
-            webDriver.WindowHandles
-                .Skip(1)
-                .ToList()
-                .ForEach(w =>
-                {
-                    webDriver.SwitchTo().Window(w);
-                    webDriver.Close();
-                });
-
-            webDriver.SwitchTo().Window(mainWindow);
-            webDriver.Manage().Cookies.DeleteAllCookies();
         }
 
         string GenerateRandomKey()

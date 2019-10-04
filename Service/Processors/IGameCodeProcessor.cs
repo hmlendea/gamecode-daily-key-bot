@@ -9,7 +9,5 @@ namespace GameCodeDailyKeyBot.Service.Processors
         void LogOut();
 
         string GatherKey();
-
-        void ClearCookies();
     }
 }
