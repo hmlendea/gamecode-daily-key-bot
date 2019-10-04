@@ -21,6 +21,7 @@ using GameCodeDailyKeyBot.Configuration;
 using GameCodeDailyKeyBot.DataAccess.DataObjects;
 using GameCodeDailyKeyBot.Logging;
 using GameCodeDailyKeyBot.Service;
+using GameCodeDailyKeyBot.Service.Processors;
 
 namespace SteamGiveawaysBot
 {
@@ -41,8 +42,8 @@ namespace SteamGiveawaysBot
 
         static void Main(string[] args)
         {
-            webDriver = SetupDriver();
             LoadConfiguration();
+            webDriver = SetupDriver();
             serviceProvider = CreateIOC();
 
             logger = serviceProvider.GetService<ILogger>();
@@ -81,8 +82,9 @@ namespace SteamGiveawaysBot
                 .AddSingleton(productKeyManagerSettings)
                 .AddSingleton(loggingSettings)
                 .AddSingleton(webDriver)
-                .AddSingleton<IWebProcessor, WebProcessor>()
                 .AddSingleton<ILogger, NuciLogger>()
+                .AddSingleton<IWebProcessor, WebProcessor>()
+                .AddSingleton<IGameCodeProcessor, GameCodeProcessor>()
                 .AddSingleton<IRepository<SteamAccountEntity>>(s => new CsvRepository<SteamAccountEntity>(dataSettings.AccountsStorePath))
                 .AddSingleton<IRepository<SteamKeyEntity>>(s => new CsvRepository<SteamKeyEntity>(dataSettings.KeysStorePath))
                 .AddSingleton<IHmacEncoder<StoreProductKeyRequest>, StoreProductKeyRequestHmacEncoder>()
