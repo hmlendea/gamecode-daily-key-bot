@@ -11,5 +11,13 @@ namespace GameCodeDailyKeyBot.Service.Models
         public string Username { get; set; }
 
         public string Code { get; set; }
+
+        public SteamKey()
+        {
+            Id = Guid.NewGuid().ToString();
+            DateReceived = DateTime.Now;
+            Username = string.Empty;
+            Code = string.Empty;
+        }
     }
 }
