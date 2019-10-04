@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Authentication;
 
 using NuciLog.Core;
 using NuciWeb;
@@ -82,7 +83,7 @@ namespace GameCodeDailyKeyBot.Service.Processors
             if (webProcessor.IsElementVisible(invalidLoginSelector))
             {
                 logger.Error(MyOperation.LogIn, OperationStatus.Failure, logInfos);
-                throw new InvalidCredentialsException(account.Username);
+                throw new AuthenticationException(account.Username);
             }
 
             logInfos.Add(new LogInfo(MyLogInfoKey.Username, account.Username));
