@@ -82,6 +82,7 @@ namespace GameCodeDailyKeyBot.Service
 
             try
             {
+                gameCodeProcessor.LogIn(account);
                 key = GatherKey(account);
             }
             catch (WebDriverException)
@@ -97,6 +98,10 @@ namespace GameCodeDailyKeyBot.Service
             {
                 logger.Error(MyOperation.KeyGathering, OperationStatus.Failure, ex, new LogInfo(MyLogInfoKey.Username, account.Username));
             }
+            finally
+            {
+                gameCodeProcessor.LogOut();
+            }
 
             return key;
         }
@@ -105,9 +110,7 @@ namespace GameCodeDailyKeyBot.Service
         {
             string keyCode = null;
             
-            gameCodeProcessor.LogIn(account);
             keyCode = gameCodeProcessor.GatherKey();
-            gameCodeProcessor.LogOut();
 
             if (string.IsNullOrWhiteSpace(keyCode))
             {
