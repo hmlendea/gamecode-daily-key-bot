@@ -117,10 +117,6 @@ namespace SteamGiveawaysBot
                 {
                     logger.Fatal(Operation.Unknown, OperationStatus.Failure, ex);
                 }
-                finally
-                {
-                    webDriver?.Quit();
-                }
 
                 logger.Info(
                     MyOperation.CrashRecovery,
@@ -129,6 +125,7 @@ namespace SteamGiveawaysBot
                 Thread.Sleep((int)RetryDelay.TotalMilliseconds);
             }
             
+            webDriver?.Quit();
             logger.Info(Operation.ShutDown, $"Application stopped");
         }
 
