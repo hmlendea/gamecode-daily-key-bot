@@ -37,8 +37,6 @@ namespace SteamGiveawaysBot
 
         static IServiceProvider serviceProvider;
 
-        static TimeSpan RetryDelay => TimeSpan.FromMinutes(5);
-
         static void Main(string[] args)
         {
             LoadConfiguration();
@@ -120,9 +118,9 @@ namespace SteamGiveawaysBot
 
                 logger.Info(
                     MyOperation.CrashRecovery,
-                    new LogInfo(MyLogInfoKey.RetryDelay, RetryDelay.TotalMilliseconds));
+                    new LogInfo(MyLogInfoKey.RetryDelay, botSettings.CrashRecoveryDelay));
                     
-                Thread.Sleep((int)RetryDelay.TotalMilliseconds);
+                Thread.Sleep(botSettings.CrashRecoveryDelay * 1000);
             }
             
             webDriver?.Quit();
