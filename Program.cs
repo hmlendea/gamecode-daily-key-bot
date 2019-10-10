@@ -135,6 +135,7 @@ namespace SteamGiveawaysBot
             options.AddArgument("--no-sandbox");
 			options.AddArgument("--disable-translate");
 			options.AddArgument("--disable-infobars");
+            options.AddArgument("--user-agent=" + botSettings.UserAgent);
 
             if (debugSettings.IsHeadless)
             {
@@ -151,18 +152,6 @@ namespace SteamGiveawaysBot
             service.HideCommandPromptWindow = true;
 
             IWebDriver driver = new ChromeDriver(service, options, TimeSpan.FromSeconds(botSettings.PageLoadTimeout));
-            IJavaScriptExecutor scriptExecutor = (IJavaScriptExecutor)driver;
-            string userAgent = (string)scriptExecutor.ExecuteScript("return navigator.userAgent;");
-
-            if (userAgent.Contains("Headless"))
-            {
-                userAgent = userAgent.Replace("Headless", "");
-                options.AddArgument($"--user-agent={userAgent}");
-
-                driver.Quit();
-                driver = new ChromeDriver(service, options);
-            }
-
             driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(botSettings.PageLoadTimeout);
             driver.Manage().Window.Maximize();
 
